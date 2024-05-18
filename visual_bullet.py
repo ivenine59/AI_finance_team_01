@@ -4,12 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from statsmodels.tsa.arima.model import ARIMA
 import imageio
+import os
 
 # 자산 정의
 assets = ['^GSPC', 'TLT', 'ARKK']  # 예시 티커: S&P 500, 20+년 국채, ARK 혁신 ETF
 
 # 데이터 다운로드
 data = yf.download(assets, start='2018-01-01', end='2023-12-31')['Adj Close']
+
+# 결과 저장할 디렉토리 생성
+output_dir = 'efficient_frontier_images'
+os.makedirs(output_dir, exist_ok=True)
 
 # 함수 정의
 def portfolio_performance(weights, returns, cov_matrix, risk_free_rate):
@@ -61,9 +66,12 @@ for date in pd.date_range(start='2018-01-01', end='2023-12-31', freq='M'):
     plt.title(f'Efficient Frontier as of {date.strftime("%Y-%m")}')
     plt.xlim(x_min, x_max)
     plt.ylim(y_min, y_max)
-    plt.savefig(f'efficient_frontier_{date.strftime("%Y-%m")}.png')
-    images.append(imageio.imread(f'efficient_frontier_{date.strftime("%Y-%m")}.png'))
+    
+    image_path = os.path.join(output_dir, f'efficient_frontier_{date.strftime("%Y-%m")}.png')
+    plt.savefig(image_path)
+    images.append(imageio.imread(image_path))
     plt.close()
 
 # GIF 저장
-imageio.mimsave('efficient_frontier.gif', images, duration=0.5)
+gif_path = os.path.join(output_dir, 'efficient_frontier.gif')
+imageio.mimsave(gif_path, images, duration=0.5)
