@@ -74,13 +74,16 @@ for date in pd.date_range(start='2019-01-01', end='2023-12-31', freq='M'):
     # Get the maximum Sharpe ratio portfolio without shorting
     ef = EfficientFrontier(expected_returns, cov_matrix)  # Recreate the object
     ef.add_constraint(lambda w: w >= 0)
-    one_fund = ef.max_sharpe(risk_free_rate=0.02)
-    ret, risk, sharpe = ef.portfolio_performance(risk_free_rate=0.02)
+    one_fund = ef.max_sharpe(risk_free_rate=risk_free_rate)
+    ret, risk, sharpe = ef.portfolio_performance(risk_free_rate=risk_free_rate)
     risk_list.append(risk)
     return_list.append(ret)
 
     # Add the scatter plot of the maximum Sharpe ratio points
     ax.scatter(risk_list, return_list, marker='o', color='red', s=100)
+
+    # Add risk-free rate
+    ax.scatter(0, risk_free_rate, marker='o', color='blue', s=100)
 
     ax.get_legend().remove()
     ax.set_title('Efficient Frontier')
@@ -154,9 +157,11 @@ for date, coeffs in coefficients_df.iterrows():
     slope, intercept, tangent_x, tangent_y = tangent_line_slope_intercept(a, b, c, risk_free_rate)
     intersection = intersection_point(alpha, slope, intercept)
     if intersection is not None:
-        results.append((date, slope, intercept, tangent_x, tangent_y, intersection[0], intersection[1]))
+        results.append((date, slope, intercept, intersection[0], intersection[1]))
 
-results_df = pd.DataFrame(results, columns=['Date', 'Slope', 'Intercept', 'Tangent_X', 'Tangent_Y', 'Intersection_X', 'Intersection_Y'])
+results_df = pd.DataFrame(results, columns=['Date', 'Slope', 'Intercept', 'Intersection_X', 'Intersection_Y'])
+results_df["max_sharpe_x"] = risk_list
+results_df["max_sharpe_y"] = return_list
 results_df.set_index('Date', inplace=True)
 
 # Plot slopes, intercepts, and intersection points over time
@@ -167,8 +172,8 @@ axes[0].set_ylabel('Slope')
 results_df['Intercept'].plot(ax=axes[1], title='Intercept of Tangent Line over time')
 axes[1].set_ylabel('Intercept')
 
-results_df['Tangent_X'].plot(ax=axes[2], title='Tangent X over time')
-axes[2].set_ylabel('Tangent_X')
+results_df['max_sharpe_x'].plot(ax=axes[2], title='Max Sharpe X over time')
+axes[2].set_ylabel('max_sharpe_x')
 
 results_df['Intersection_X'].plot(ax=axes[3], title='Intersection X over time')
 axes[3].set_ylabel('Intersection_X')
@@ -179,4 +184,4 @@ plt.close(fig)
 
 # Display the results
 for date, row in results_df.iterrows():
-    print(f"Date: {date.date()} - Slope: {row['Slope']:.4f}, Intercept: {row['Intercept']:.4f}, Tangent Point: ({row['Tangent_X']:.4f}, {row['Tangent_Y']:.4f}), Intersection: ({row['Intersection_X']:.4f}, {row['Intersection_Y']:.4f})")
+    print(f"Date: {date.date()} - Slope: {row['Slope']:.4f}, Intercept: {row['Intercept']:.4f}, Tangent Point: ({row['max_sharpe_x']:.4f}, {row['max_sharpe_y']:.4f}), Intersection: ({row['Intersection_X']:.4f}, {row['Intersection_Y']:.4f})")
