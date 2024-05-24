@@ -6,6 +6,7 @@ from statsmodels.tsa.arima.model import ARIMA
 import imageio.v2 as imageio  # 이미지 읽기를 위해 imageio.v2 사용
 import os
 from sklearn.metrics.pairwise import cosine_similarity
+from kofr import ret_kofr
 
 # 자산 정의
 assets = ['^GSPC', 'TLT', '^KS11']  # 예시 티커: S&P 500, 20+년 국채, KOSPI
@@ -41,6 +42,17 @@ def generate_random_portfolios(num_portfolios, returns, cov_matrix, risk_free_ra
     
     return results, weights_record
 
+def get_closest_date(date, df):
+    """
+    Args:
+        date: The target date.
+        df: The DataFrame to search.
+
+    Returns:
+        The closest date in the DataFrame that is after the target date.
+    """
+    return df.index[df.index >= date].min()
+
 # GIF 생성 준비
 images = []
 
@@ -54,14 +66,18 @@ best_weights_record = {}
 # 이전 달의 가중치를 저장할 변수 초기화
 previous_weights = None
 
+# Risk-free DataFrame
+df_kofr = ret_kofr(bool = True)
+
 # 월별 Efficient Frontier 생성 및 시각화
-for date in pd.date_range(start='2018-01-01', end='2023-12-31', freq='M'):  # 'M' 대신 'ME' 사용
+for date in pd.date_range(start='2018-01-01', end='2023-12-31', freq='ME'):  # 'M' 대신 'ME' 사용
     monthly_data = data[:date]
     returns = monthly_data.pct_change(fill_method=None).dropna()  # fill_method=None 사용
     expected_returns = returns.mean() * 252  # 연간 수익률
     cov_matrix = returns.cov() * 252  # 연간 공분산
-    risk_free_rate = 0.02  # 예시 무위험 수익률, 2%
-    
+    first_date_in_kofr = get_closest_date(date.replace(day=1), df_kofr)
+    risk_free_rate = df_kofr.loc[first_date_in_kofr]['KOFR'] * 0.01
+
     num_portfolios = 10000
     results, weights = generate_random_portfolios(num_portfolios, expected_returns, cov_matrix, risk_free_rate)
     
