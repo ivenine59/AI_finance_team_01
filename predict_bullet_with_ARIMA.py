@@ -19,11 +19,17 @@ cov_matrix = returns.cov() * 252  # Annualized covariance
 
 # Helper functions for efficient frontier
 def portfolio_performance(weights, returns, cov_matrix):
+    """
+    Calculate portfolio return and standard deviation.
+    """
     portfolio_return = np.dot(weights, returns)
     portfolio_stddev = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
     return portfolio_return, portfolio_stddev
 
 def generate_random_portfolios(num_portfolios, returns, cov_matrix):
+    """
+    Generate random portfolios with given returns and covariance matrix.
+    """
     results = np.zeros((3, num_portfolios))
     weights_record = []
     
@@ -36,7 +42,7 @@ def generate_random_portfolios(num_portfolios, returns, cov_matrix):
         
         results[0,i] = portfolio_stddev
         results[1,i] = portfolio_return
-        results[2,i] = results[1,i] / results[0,i]
+        results[2,i] = results[1,i] / results[0,i] # Sharpe ratio
     
     return results, weights_record
 

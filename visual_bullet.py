@@ -55,7 +55,7 @@ best_weights_record = {}
 previous_weights = None
 
 # 월별 Efficient Frontier 생성 및 시각화
-for date in pd.date_range(start='2018-01-01', end='2023-12-31', freq='ME'):  # 'M' 대신 'ME' 사용
+for date in pd.date_range(start='2018-01-01', end='2023-12-31', freq='M'):  # 'M' 대신 'ME' 사용
     monthly_data = data[:date]
     returns = monthly_data.pct_change(fill_method=None).dropna()  # fill_method=None 사용
     expected_returns = returns.mean() * 252  # 연간 수익률
