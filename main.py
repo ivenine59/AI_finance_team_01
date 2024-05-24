@@ -184,4 +184,4 @@ plt.close(fig)
 
 # Display the results
 for date, row in results_df.iterrows():
-    print(f"Date: {date.date()} - Slope: {row['Slope']:.4f}, Intercept: {row['Intercept']:.4f}, Tangent Point: ({row['max_sharpe_x']:.4f}, {row['max_sharpe_y']:.4f}), Intersection: ({row['Intersection_X']:.4f}, {row['Intersection_Y']:.4f})")
+    print(f"Date: {date.date()} - Slope: {row['Slope']:.4f}, Intercept: {row['Intercept']:.4f}, Tangent Point: ({row['max_sharpe_x']:.4f}, {row['max_sharpe_y']:.4f}), Intersection: ({row['Intersection_X']:.4f}, {row['Intersection_Y']:.4f}), Intersection/Tangent: ({row['Intersection_X']/row['max_sharpe_x']:.4f}, {row['Intersection_Y']/row['max_sharpe_y']:.4f})")
