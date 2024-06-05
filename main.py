@@ -152,12 +152,19 @@ alpha = 1  # Example coefficient for the utility function
 
 results = []
 
+# Save date, a, b, c, risk-free rate in a DataFrame
+
 for date, coeffs in coefficients_df.iterrows():
     a, b, c = coeffs
+    print(a, b, c)
     slope, intercept, tangent_x, tangent_y = tangent_line_slope_intercept(a, b, c, risk_free_rate)
     intersection = intersection_point(alpha, slope, intercept)
     if intersection is not None:
         results.append((date, slope, intercept, intersection[0], intersection[1]))
+
+# save csv file of coefficients
+coefficients_df['risk_free_rate'] = risk_free_rate
+coefficients_df.to_csv('coefficients.csv')
 
 results_df = pd.DataFrame(results, columns=['Date', 'Slope', 'Intercept', 'Intersection_X', 'Intersection_Y'])
 results_df["max_sharpe_x"] = risk_list
