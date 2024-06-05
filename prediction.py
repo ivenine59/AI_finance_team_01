@@ -38,7 +38,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, verbose=True)
 
 # Train the model
-epochs = 300
+epochs = 400
 patience = 10  # Early stopping patience
 best_loss = np.inf
 patience_counter = 0
