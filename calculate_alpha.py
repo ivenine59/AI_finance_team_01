@@ -12,7 +12,7 @@ def model_function(x, a, b, c):
 
 # Derivative of the model function
 def model_derivative(x, a, b):
-    return a / (2 * np.sqrt(np.maximum(0, x - b)))
+    return np.where(x > b, a / (2 * np.sqrt(x - b)), 0)
 
 # Define the function for y = m*x + risk_free_rate
 def linear_function(x, m, risk_free_rate):
@@ -22,7 +22,7 @@ def linear_function(x, m, risk_free_rate):
 plt.figure(figsize=(14, 10))
 
 # Loop through the first few rows for visualization purposes
-for idx, row in data.head(5).iterrows():
+for idx, row in data.head(1).iterrows():
     # Define a range of x values
     x = np.linspace(0, 1, 100)
     
@@ -31,15 +31,15 @@ for idx, row in data.head(5).iterrows():
     
     # Find the tangent point where the derivative of the model equals the slope
     def tangent_condition(x):
-        return model_derivative(x, row['a'], row['b']) - (row['a'] - row['risk_free_rate']) / (x - row['b'])
+        return model_derivative(x, row['a'], row['b']) - (row['a'] / (2 * np.sqrt(x - row['b'])))
     
     tangent_x = fsolve(tangent_condition, row['b'] + 0.1)[0]
     tangent_y = model_function(tangent_x, row['a'], row['b'], row['c'])
     
-    m = (tangent_y - row['risk_free_rate']) / tangent_x
+    m = model_derivative(tangent_x, row['a'], row['b'])
     
     # Linear function values
-    linear_y = linear_function(x, m, row['risk_free_rate'])
+    linear_y = linear_function(x, m, tangent_y - m * tangent_x)
     
     # Plot the model function
     plt.plot(x, model_y, label=f'Model Function (date: {idx.date()})')
@@ -55,4 +55,5 @@ plt.ylabel('y')
 plt.title('Model Function and Tangent Lines')
 plt.legend()
 plt.grid(True)
+plt.savefig('model_function_and_tangent_lines.png')
 plt.show()
