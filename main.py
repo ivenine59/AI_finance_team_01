@@ -98,6 +98,7 @@ for date in pd.date_range(start='2019-01-01', end='2023-12-31', freq='M'):
     plt.tight_layout()
     plt.savefig(f'plots/efficient_frontier_{date.strftime("%Y-%m-%d")}.png')
     plt.close(fig)
+    print("Done until ", date)
 
 # Convert coefficients list to a DataFrame for easier plotting
 coefficients_df = pd.DataFrame(coefficients_list, columns=['a', 'b', 'c'], index=dates)
@@ -157,14 +158,22 @@ alpha = 1  # Example coefficient for the utility function
 
 results = []
 
+# Save date, a, b, c, risk-free rate in a DataFrame
+
 for date, coeffs in coefficients_df.iterrows():
     a, b, c = coeffs
+
     first_date_in_kofr = get_closest_date(date.replace(day=1), df_kofr)
     risk_free_rate = df_kofr.loc[first_date_in_kofr]['KOFR'] * 0.01   
+
     slope, intercept, tangent_x, tangent_y = tangent_line_slope_intercept(a, b, c, risk_free_rate)
     intersection = intersection_point(alpha, slope, intercept, risk_free_rate)
     if intersection is not None:
         results.append((date, slope, intercept, intersection[0], intersection[1]))
+
+# save csv file of coefficients
+coefficients_df['risk_free_rate'] = risk_free_rate
+coefficients_df.to_csv('coefficients.csv')
 
 results_df = pd.DataFrame(results, columns=['Date', 'Slope', 'Intercept', 'Intersection_X', 'Intersection_Y'])
 results_df["max_sharpe_x"] = risk_list
