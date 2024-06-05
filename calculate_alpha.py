@@ -31,7 +31,7 @@ alpha_values = []
 plt.figure(figsize=(14, 10))
 
 # Loop through the first few rows for visualization purposes
-for idx, row in data.head(1).iterrows():
+for idx, row in data.iterrows():
     # Define a range of x values
     x = np.linspace(0, 1, 100)
     
@@ -40,13 +40,14 @@ for idx, row in data.head(1).iterrows():
     
     # Find the tangent point where the derivative of the model equals the slope
     def tangent_condition(x):
-        return model_derivative(x, row['a'], row['b']) - (row['a'] / (2 * np.sqrt(x - row['b'])))
+        return model_derivative(x, row['a'], row['b']) - (model_function(x, row['a'], row['b'], row['c']) - row['risk_free_rate']) / x
     
-    tangent_x = fsolve(tangent_condition, row['b'] + 0.1)[0]
+    tangent_x = fsolve(tangent_condition, row['b'] + 0.01)[0]
     tangent_y = model_function(tangent_x, row['a'], row['b'], row['c'])
     
     m = model_derivative(tangent_x, row['a'], row['b'])
-    
+    print(m, (tangent_y - row['risk_free_rate']) / tangent_x)
+
     # Linear function values
     linear_y = linear_function(x, (tangent_y - row['risk_free_rate']) / tangent_x, row['risk_free_rate'])
     
@@ -57,7 +58,7 @@ for idx, row in data.head(1).iterrows():
     def intersection_condition(x):
         return quadratic_function(x, util_a, row['risk_free_rate']) - linear_function(x, m, tangent_y - m * tangent_x)
     
-    util_x = fsolve(intersection_condition, 1)[0]
+    util_x = fsolve(intersection_condition, 10)[0]
     util_y = quadratic_function(util_x, util_a, row['risk_free_rate'])
     
     # Calculate alpha values
@@ -65,7 +66,7 @@ for idx, row in data.head(1).iterrows():
     alpha_y = (util_y - row['risk_free_rate']) / (tangent_y - row['risk_free_rate'])
     
     # Store alpha values
-    alpha_values.append([idx.date(), alpha_x, alpha_y])
+    alpha_values.append([idx.date(), alpha_x, alpha_y, m])
     
     # Plot the model function
     plt.plot(x, model_y, label=f'Model Function (date: {idx.date()})')
@@ -83,7 +84,7 @@ for idx, row in data.head(1).iterrows():
     plt.plot(util_x, util_y, 'go', label=f'Intersection Point (date: {idx.date()})')
 
 # Save the alpha values to a CSV file
-alpha_df = pd.DataFrame(alpha_values, columns=['date', 'alpha_x', 'alpha_y'])
+alpha_df = pd.DataFrame(alpha_values, columns=['date', 'alpha_x', 'alpha_y', 'slope'])
 alpha_df.to_csv('predicted_alpha_values.csv', index=False)
 
 plt.xlabel('x')
