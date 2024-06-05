@@ -2,20 +2,22 @@ import pandas as pd
 import numpy as np
 from scipy.optimize import fsolve
 
+util_a = 0.5
+
 # Load the CSV files
 df = pd.read_csv('max_sharpe_coordinates.csv')
 coefficients_df = pd.read_csv('coefficients.csv')
 
 # Define the quadratic function
-def quadratic_function(x, util_a=1, risk_free_rate=0.5):
+def quadratic_function(x, util_a, risk_free_rate):
     return util_a * x**2 + risk_free_rate
 
 # Define the linear function
 def linear_function(x, return_p, sigma_p, risk_free_rate):
-    return (return_p - risk_free_rate)/sigma_p * (x - sigma_p) + risk_free_rate
+    return (return_p - risk_free_rate)/sigma_p * (x - sigma_p) + return_p
 
 # Define the system of equations to find the intersection point
-def intersection_equation(x, return_p, sigma_p, risk_free_rate, util_a=0.5):
+def intersection_equation(x, return_p, sigma_p, risk_free_rate, util_a):
     return quadratic_function(x, util_a, risk_free_rate) - linear_function(x, return_p, sigma_p, risk_free_rate)
 
 # Storage for results
@@ -28,8 +30,8 @@ for index, row in df.iterrows():
     risk_free_rate = coefficients_df.loc[coefficients_df['date'] == row['date'], 'risk_free_rate'].values[0]
     
     # Use fsolve to find the intersection point
-    initial_guess = sigma_p  # You can set a different initial guess if needed
-    intersection_sigma = fsolve(intersection_equation, initial_guess, args=(return_p, sigma_p, risk_free_rate, 0.5))[0]
+    initial_guess = 5  # You can set a different initial guess if needed
+    intersection_sigma = fsolve(intersection_equation, initial_guess, args=(return_p, sigma_p, risk_free_rate, util_a))[0]
     
     # Calculate the corresponding return value for the intersection point
     intersection_return = linear_function(intersection_sigma, return_p, sigma_p, risk_free_rate)
