@@ -3,9 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import openpyxl
 
-def ret_kofr(bool):
+def ret_kofr():
     readcols = ['KOFR', 'Low', '50th percentile', 'High']
-    dir = 'AI_finance_team_01/KOFR/'
+    dir = 'KOFR/'
     kofr2018 = pd.read_excel(dir + "KOFR2018.xls", index_col = 0, header = 4)[readcols]
     kofr2019 = pd.read_excel(dir + "KOFR2019.xls", index_col = 0, header = 4)[readcols]
     kofr2020 = pd.read_excel(dir + "KOFR2020.xls", index_col = 0, header = 4)[readcols]
@@ -20,4 +20,4 @@ def ret_kofr(bool):
     kofr.sort_index(inplace = True)
     return kofr
 
-#print(ret_kofr(bool = True))
+#print(ret_kofr())

@@ -6,6 +6,7 @@ from pypfopt.efficient_frontier import EfficientFrontier
 from pypfopt import plotting
 from scipy.optimize import curve_fit
 from scipy.optimize import minimize
+from kofr import ret_kofr
 import os
 
 # Create directory for plots if it doesn't exist
@@ -16,35 +17,39 @@ assets = ['^GSPC', 'TLT', 'ARKK']  # Example tickers for S&P 500, 20+ Year Treas
 
 # Download data
 data = yf.download(assets, start='2018-01-01', end='2023-12-31')['Adj Close']
+df_kofr = ret_kofr()
 
 risk_list = []
 return_list = []
 coefficients_list = []
 dates = []
 
+# Get the closest date after the target date.
+def get_closest_date(date, df):
+    return df.index[df.index >= date].min()
+
 # Define the function to fit
 def frontier_func(x, a, b, c):
     return a * np.sqrt(np.maximum(0, x - b)) + c
 
-# Risk-free rate
-risk_free_rate = 0.02
-
 # Define the utility function
-def utility_function(x, alpha):
+def utility_function(x, alpha, risk_free_rate):
     return alpha * x**2 + risk_free_rate
+
+# Define the plotting function, which actually plots
 
 for date in pd.date_range(start='2019-01-01', end='2023-12-31', freq='M'):
     monthly_data = data[:date]
+    first_date_in_kofr = get_closest_date(date.replace(day=1), df_kofr)
+    risk_free_rate = df_kofr.loc[first_date_in_kofr]['KOFR'] * 0.01
 
     # Calculate returns and risks
     returns = monthly_data.pct_change().dropna()
     expected_returns = np.array(returns.mean() * 252)  # Annualized return
     cov_matrix = np.array(returns.cov() * 252)  # Annualized covariance
 
-    # Create Efficient Frontier instance
+    # Create Efficient Frontier instance with no shorting
     ef = EfficientFrontier(expected_returns, cov_matrix)
-
-    # Disallow shorting by setting weight bounds to (0, 1) for all assets
     ef.add_constraint(lambda w: w >= 0)
 
     # Generate a range of target returns within achievable range
@@ -135,7 +140,7 @@ def tangent_line_slope_intercept(a, b, c, rf):
     return slope, intercept, tangent_x, tangent_y
 
 # Solve for the intersection point of the utility function and the tangent line
-def intersection_point(alpha, slope, intercept):
+def intersection_point(alpha, slope, intercept, risk_free_rate):
     # Solve alpha * x^2 + rf = slope * x + intercept
     # which is alpha * x^2 - slope * x + (rf - intercept) = 0
     coefficients = [alpha, -slope, (risk_free_rate - intercept)]
@@ -154,8 +159,10 @@ results = []
 
 for date, coeffs in coefficients_df.iterrows():
     a, b, c = coeffs
+    first_date_in_kofr = get_closest_date(date.replace(day=1), df_kofr)
+    risk_free_rate = df_kofr.loc[first_date_in_kofr]['KOFR'] * 0.01   
     slope, intercept, tangent_x, tangent_y = tangent_line_slope_intercept(a, b, c, risk_free_rate)
-    intersection = intersection_point(alpha, slope, intercept)
+    intersection = intersection_point(alpha, slope, intercept, risk_free_rate)
     if intersection is not None:
         results.append((date, slope, intercept, intersection[0], intersection[1]))
 
