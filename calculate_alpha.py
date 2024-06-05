@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from scipy.optimize import fsolve
 
-util_a = 0.5
+util_a = 0.1
 # Load the CSV data into a DataFrame
 data = pd.read_csv('predictions.csv', parse_dates=['date'], index_col='date')
 
@@ -47,7 +47,7 @@ for idx, row in data.iterrows():
     def util_condition(x):
         return linear_function(x, m, row['risk_free_rate']) - quadratic_function(x, util_a, row['risk_free_rate'])
     
-    util_x = fsolve(util_condition, 0.5)[0]
+    util_x = fsolve(util_condition, 2)[0]
     util_y = linear_function(util_x, m, row['risk_free_rate'])
     
     # Calculate alpha_x and alpha_y
