@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 
-util_a = 0.1
-# Load the CSV data into a DataFrame
+# Load the data (assumed to be available in the same directory)
 data = pd.read_csv('predictions.csv', parse_dates=['date'], index_col='date')
 
 # Define the function for a * sqrt(max(0, x - b)) + c
@@ -18,21 +18,16 @@ def model_derivative(x, a, b):
 def linear_function(x, m, risk_free_rate):
     return m * x + risk_free_rate
 
-# Define the function for a * x^2 + risk_free_rate
-def quadratic_function(x, a, risk_free_rate):
-    return a * x**2 + risk_free_rate
+# Initialize a figure for plotting
+plt.figure(figsize=(14, 10))
 
-# Initialize lists to store the results
-tangent_points = []
-slopes = []
-util_points = []
-alpha_x_vals = []
-alpha_y_vals = []
-
-# Loop through the rows to fit the models and find intersections
-for idx, row in data.iterrows():
+# Loop through the first few rows for visualization purposes
+for idx, row in data.head(5).iterrows():
     # Define a range of x values
     x = np.linspace(0, 1, 100)
+    
+    # Model function values
+    model_y = model_function(x, row['a'], row['b'], row['c'])
     
     # Find the tangent point where the derivative of the model equals the slope
     def tangent_condition(x):
@@ -43,38 +38,21 @@ for idx, row in data.iterrows():
     
     m = (tangent_y - row['risk_free_rate']) / tangent_x
     
-    # Find the intersection with the quadratic function
-    def util_condition(x):
-        return linear_function(x, m, row['risk_free_rate']) - quadratic_function(x, util_a, row['risk_free_rate'])
+    # Linear function values
+    linear_y = linear_function(x, m, row['risk_free_rate'])
     
-    util_x = fsolve(util_condition, 2)[0]
-    util_y = linear_function(util_x, m, row['risk_free_rate'])
+    # Plot the model function
+    plt.plot(x, model_y, label=f'Model Function (date: {idx.date()})')
     
-    # Calculate alpha_x and alpha_y
-    alpha_x = util_x / tangent_x
-    alpha_y = (util_y - row['risk_free_rate']) / (tangent_y - row['risk_free_rate'])
+    # Plot the tangent line
+    plt.plot(x, linear_y, linestyle='--', label=f'Tangent Line (date: {idx.date()})')
     
-    # Store the results
-    tangent_points.append((tangent_x, tangent_y))
-    slopes.append(m)
-    util_points.append((util_x, util_y))
-    alpha_x_vals.append(alpha_x)
-    alpha_y_vals.append(alpha_y)
+    # Highlight the tangent point
+    plt.plot(tangent_x, tangent_y, 'ro', label=f'Tangent Point (date: {idx.date()})')
 
-# Create a DataFrame to store the results
-results = pd.DataFrame({
-    'date': data.index,
-    'tangent_x': [pt[0] for pt in tangent_points],
-    'tangent_y': [pt[1] for pt in tangent_points],
-    'slope': slopes,
-    'util_x': [pt[0] for pt in util_points],
-    'util_y': [pt[1] for pt in util_points],
-    'alpha_x': alpha_x_vals,
-    'alpha_y': alpha_y_vals
-})
-
-# Display the DataFrame
-print(results.head())
-
-# Save the results to a CSV file
-results.to_csv('tangent_points_slopes_and_utils.csv')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Model Function and Tangent Lines')
+plt.legend()
+plt.grid(True)
+plt.show()
