@@ -7,6 +7,7 @@ from pypfopt import plotting
 from scipy.optimize import curve_fit
 from scipy.optimize import minimize
 from kofr import ret_kofr
+import cvxpy as cp
 import os
 
 # Create directory for plots if it doesn't exist
@@ -57,7 +58,7 @@ for date in pd.date_range(start='2019-01-01', end='2023-12-31', freq='M'):
     frontier_returns, frontier_risks = [], []
 
     for r in target_returns:
-        ef_temp = EfficientFrontier(expected_returns, cov_matrix)  # Create a new instance
+        ef_temp = EfficientFrontier(expected_returns, cov_matrix, solver = cp.CLARABEL)  # Create a new instance
         ef_temp.add_constraint(lambda w: w >= 0)
         ef_temp.efficient_return(r)
         ret, risk, _ = ef_temp.portfolio_performance()
@@ -77,7 +78,7 @@ for date in pd.date_range(start='2019-01-01', end='2023-12-31', freq='M'):
     plotting.plot_efficient_frontier(ef, ax=ax, show_assets=False, show_fig=False)
 
     # Get the maximum Sharpe ratio portfolio without shorting
-    ef = EfficientFrontier(expected_returns, cov_matrix)  # Recreate the object
+    ef = EfficientFrontier(expected_returns, cov_matrix, solver = cp.CLARABEL)  # Recreate the object
     ef.add_constraint(lambda w: w >= 0)
     one_fund = ef.max_sharpe(risk_free_rate=risk_free_rate)
     ret, risk, sharpe = ef.portfolio_performance(risk_free_rate=risk_free_rate)
@@ -157,6 +158,7 @@ def intersection_point(alpha, slope, intercept, risk_free_rate):
 alpha = 1  # Example coefficient for the utility function
 
 results = []
+rflist = []
 
 # Save date, a, b, c, risk-free rate in a DataFrame
 
@@ -164,7 +166,8 @@ for date, coeffs in coefficients_df.iterrows():
     a, b, c = coeffs
 
     first_date_in_kofr = get_closest_date(date.replace(day=1), df_kofr)
-    risk_free_rate = df_kofr.loc[first_date_in_kofr]['KOFR'] * 0.01   
+    risk_free_rate = df_kofr.loc[first_date_in_kofr]['KOFR'] * 0.01
+    rflist.append(np.round(risk_free_rate, 6))
 
     slope, intercept, tangent_x, tangent_y = tangent_line_slope_intercept(a, b, c, risk_free_rate)
     intersection = intersection_point(alpha, slope, intercept, risk_free_rate)
@@ -172,7 +175,7 @@ for date, coeffs in coefficients_df.iterrows():
         results.append((date, slope, intercept, intersection[0], intersection[1]))
 
 # save csv file of coefficients
-coefficients_df['risk_free_rate'] = risk_free_rate
+coefficients_df['risk_free_rate'] = rflist
 coefficients_df.to_csv('coefficients.csv')
 
 results_df = pd.DataFrame(results, columns=['Date', 'Slope', 'Intercept', 'Intersection_X', 'Intersection_Y'])
