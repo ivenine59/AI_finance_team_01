@@ -48,7 +48,7 @@ for idx, row in data.head(1).iterrows():
     m = model_derivative(tangent_x, row['a'], row['b'])
     
     # Linear function values
-    linear_y = linear_function(x, m, tangent_y - m * tangent_x)
+    linear_y = linear_function(x, (tangent_y - row['risk_free_rate']) / tangent_x, row['risk_free_rate'])
     
     # Quadratic function values
     quadratic_y = quadratic_function(x, util_a, row['risk_free_rate'])
@@ -84,7 +84,7 @@ for idx, row in data.head(1).iterrows():
 
 # Save the alpha values to a CSV file
 alpha_df = pd.DataFrame(alpha_values, columns=['date', 'alpha_x', 'alpha_y'])
-alpha_df.to_csv('alpha_values.csv', index=False)
+alpha_df.to_csv('predicted_alpha_values.csv', index=False)
 
 plt.xlabel('x')
 plt.ylabel('y')
