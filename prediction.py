@@ -97,34 +97,44 @@ predictions_df.to_csv('predictions.csv')
 
 # Plot the results
 plt.figure(figsize=(14, 8))
+# Function to set x-axis ticks to show labels only once a year
+def set_yearly_ticks(ax, dates):
+    years = pd.to_datetime(dates).year
+    unique_years = np.unique(years)
+    ax.set_xticks([np.where(years == year)[0][0] for year in unique_years])
+    ax.set_xticklabels(unique_years)
 
 # Plot 'a'
-plt.subplot(2, 2, 1)
-plt.plot(coefficients_df.index[1:], coefficients_df['a'][1:], label='Actual a')
-plt.plot(coefficients_df.index[1:], predictions_df['a'], label='Predicted a')
-plt.legend()
-plt.title('Actual vs Predicted a')
+ax1 = plt.subplot(2, 2, 1)
+ax1.plot(coefficients_df.index[1:], coefficients_df['a'][1:], label='Actual a')
+ax1.plot(coefficients_df.index[1:], predictions_df['a'], label='Predicted a')
+ax1.legend()
+ax1.set_title('Actual vs Predicted a')
+set_yearly_ticks(ax1, coefficients_df.index[1:])
 
 # Plot 'b'
-plt.subplot(2, 2, 2)
-plt.plot(coefficients_df.index[1:], coefficients_df['b'][1:], label='Actual b')
-plt.plot(coefficients_df.index[1:], predictions_df['b'], label='Predicted b')
-plt.legend()
-plt.title('Actual vs Predicted b')
+ax2 = plt.subplot(2, 2, 2)
+ax2.plot(coefficients_df.index[1:], coefficients_df['b'][1:], label='Actual b')
+ax2.plot(coefficients_df.index[1:], predictions_df['b'], label='Predicted b')
+ax2.legend()
+ax2.set_title('Actual vs Predicted b')
+set_yearly_ticks(ax2, coefficients_df.index[1:])
 
 # Plot 'c'
-plt.subplot(2, 2, 3)
-plt.plot(coefficients_df.index[1:], coefficients_df['c'][1:], label='Actual c')
-plt.plot(coefficients_df.index[1:], predictions_df['c'], label='Predicted c')
-plt.legend()
-plt.title('Actual vs Predicted c')
+ax3 = plt.subplot(2, 2, 3)
+ax3.plot(coefficients_df.index[1:], coefficients_df['c'][1:], label='Actual c')
+ax3.plot(coefficients_df.index[1:], predictions_df['c'], label='Predicted c')
+ax3.legend()
+ax3.set_title('Actual vs Predicted c')
+set_yearly_ticks(ax3, coefficients_df.index[1:])
 
 # Plot 'risk_free_rate'
-plt.subplot(2, 2, 4)
-plt.plot(coefficients_df.index[1:], coefficients_df['risk_free_rate'][1:], label='Actual risk_free_rate')
-plt.plot(coefficients_df.index[1:], predictions_df['risk_free_rate'], label='Predicted risk_free_rate')
-plt.legend()
-plt.title('Actual vs Predicted risk_free_rate')
+ax4 = plt.subplot(2, 2, 4)
+ax4.plot(coefficients_df.index[1:], coefficients_df['risk_free_rate'][1:], label='Actual risk_free_rate')
+ax4.plot(coefficients_df.index[1:], predictions_df['risk_free_rate'], label='Predicted risk_free_rate')
+ax4.legend()
+ax4.set_title('Actual vs Predicted risk_free_rate')
+set_yearly_ticks(ax4, coefficients_df.index[1:])
 
 plt.tight_layout()
 
