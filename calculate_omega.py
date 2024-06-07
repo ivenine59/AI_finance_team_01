@@ -24,8 +24,8 @@ def linear_function(x, m, risk_free_rate):
 def quadratic_function(x, a, risk_free_rate):
     return a * x**2 + risk_free_rate
 
-# Initialize lists to store alpha values
-alpha_values = []
+# Initialize lists to store omega values
+omega_values = []
 
 # Initialize a figure for plotting
 plt.figure(figsize=(14, 10))
@@ -61,12 +61,12 @@ for idx, row in data.iterrows():
     util_x = fsolve(intersection_condition, 10)[0]
     util_y = quadratic_function(util_x, util_a, row['risk_free_rate'])
     
-    # Calculate alpha values
-    alpha_x = util_x / tangent_x
-    alpha_y = (util_y - row['risk_free_rate']) / (tangent_y - row['risk_free_rate'])
+    # Calculate omega values
+    omega_x = util_x / tangent_x
+    omega_y = (util_y - row['risk_free_rate']) / (tangent_y - row['risk_free_rate'])
     
-    # Store alpha values
-    alpha_values.append([idx.date(), alpha_x, alpha_y, m])
+    # Store omega values
+    omega_values.append([idx.date(), omega_x, omega_y, m])
     
     # Plot the model function
     plt.plot(x, model_y, label=f'Model Function (date: {idx.date()})')
@@ -83,9 +83,9 @@ for idx, row in data.iterrows():
     # Highlight the intersection point
     plt.plot(util_x, util_y, 'go', label=f'Intersection Point (date: {idx.date()})')
 
-# Save the alpha values to a CSV file
-alpha_df = pd.DataFrame(alpha_values, columns=['date', 'alpha_x', 'alpha_y', 'slope'])
-alpha_df.to_csv('predicted_alpha_values.csv', index=False)
+# Save the omega values to a CSV file
+omega_df = pd.DataFrame(omega_values, columns=['date', 'omega_x', 'omega_y', 'slope'])
+omega_df.to_csv('predicted_omega_values.csv', index=False)
 
 plt.xlabel('x')
 plt.ylabel('y')

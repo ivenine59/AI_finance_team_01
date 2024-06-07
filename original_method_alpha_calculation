@@ -36,19 +36,19 @@ for index, row in df.iterrows():
     # Calculate the corresponding return value for the intersection point
     intersection_return = linear_function(intersection_sigma, return_p, sigma_p, risk_free_rate)
     
-    # Calculate alpha_x and alpha_y
-    alpha_x = intersection_sigma / sigma_p
-    alpha_y = (intersection_return - risk_free_rate) / (return_p - risk_free_rate)
+    # Calculate omega_x and omega_y
+    omega_x = intersection_sigma / sigma_p
+    omega_y = (intersection_return - risk_free_rate) / (return_p - risk_free_rate)
     
     # Append the results
     results.append({'date': row['date'], 'sigma_p': sigma_p, 'return_p': return_p, 
                     'risk_free_rate': risk_free_rate, 'intersection_sigma': intersection_sigma, 
-                    'intersection_return': intersection_return, 'alpha_x': alpha_x, 'alpha_y': alpha_y})
+                    'intersection_return': intersection_return, 'omega_x': omega_x, 'omega_y': omega_y})
 
 # Convert the results to a DataFrame
 results_df = pd.DataFrame(results)
 
 # Save the results to a new CSV file
-results_df.to_csv('tangent_alpha_values.csv', index=False)
+results_df.to_csv('tangent_omega_values.csv', index=False)
 
 print(results_df.head(50))
